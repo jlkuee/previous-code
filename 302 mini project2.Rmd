@@ -1,0 +1,182 @@
+---
+title: "mini project 2"
+author: "Yiyun Sun"
+date: "6/7/2020"
+output:
+  powerpoint_presentation: default
+  beamer_presentation: default
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(xtable) 
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+data <- read.csv("/Users/sunyiyun/Downloads/body_fat_complete.csv", header=T)
+set.seed(1004728654)
+rows <- sample(1:250, 30, replace=FALSE) 
+body_fat <- data[rows,]
+write.csv(body_fat, file="body_fat.csv")
+```
+
+
+## Introduction
+This time we will figure out more information about the data researcher provided for us.
+The target for this project is trying to find a new regression model with several predictor variables. This model needs to be easy to demonstrate the relationship between response variable and predictor variables, and useful for prediction as well. 
+
+## Steps
+-Firstly, I will find several suitable multiple linear regression models. 
+
+-Then I will check whether each predictor variables has influence on the response variable.
+
+-Next I will check if each smaller model is better than the full model.
+
+-After this, I will diagnose the remain model.
+
+-Finally, I will have one best model for the researcher.
+
+## Data
+This time I still used the 'body_fat' data to solve these problems.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+str(body_fat)
+summary(body_fat)
+```
+
+## Method
+-Constructing Multiple Linear Regression Models
+
+-Testing indicidual codfficients and significance of regression
+
+-F test
+
+-Diagnosis
+
+## Previous model
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+lm(Pct.BF ~ waist, data = body_fat)
+```
+The original model is $\hat y = 1.504x -36.082$.
+
+
+## Multiple Linear Regression Models
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+mod <- lm(Pct.BF ~ Age + Weight  + Height+Neck+Chest+waist+Abdomen+Hip+Thigh+Knee+Ankle+Bicep+Forearm+Wrist, data = body_fat)
+summary(mod)
+```
+p-value is 0.002343, reject the null hypothesis (all slope equals to zero)
+
+
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+anova(mod)
+```
+Age Weight Height
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+mod_1 <- lm(Pct.BF ~ waist + Age, data = body_fat)
+mod_2 <- lm(Pct.BF ~ waist + Weight, data = body_fat)
+mod_3 <- lm(Pct.BF ~ waist + Height, data = body_fat)
+mod_4 <- lm(Pct.BF ~ waist + Abdomen, data = body_fat)
+par(mfrow=c(2,2))
+summary(mod_1)
+summary(mod_2)
+summary(mod_3)
+summary(mod_4)
+```
+
+
+
+
+
+
+weight and height
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+mod_5 <- lm(Pct.BF ~ waist + Height+Weight, data = body_fat)
+summary(mod_5)
+```
+
+## Partial F Test
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+anova(mod, mod_2)
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+anova(mod, mod_3)
+```
+fail to reject $H_0$ 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+anova(mod, mod_5)
+```
+
+## Check assumption
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+pairs(body_fat[3:8])
+```
+最好的是weight和waist之间的关系 剩下的不太linear
+
+## mod_2 Weight+waist
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1,2))
+plot(rstudent(mod_2)~body_fat$waist, xlab="waist", ylab="standard. residuals")
+plot(rstudent(mod_2)~body_fat$Weight, xlab="Weight", ylab="standard. residuals")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(body_fat$Pct.BF ~ fitted(mod_2), xlab="Fitted Values", ylab="Price")
+abline(a = 0, b = 1)
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(2,2))
+plot(mod_2)
+```
+
+
+## mod_3 Height+waist
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1,2))
+plot(rstudent(mod_3)~body_fat$waist, xlab="waist", ylab="standard. residuals")
+plot(rstudent(mod_3)~body_fat$Height, xlab="Height", ylab="standard. residuals")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(body_fat$Pct.BF ~ fitted(mod_3), xlab="Fitted Values", ylab="Price")
+abline(a = 0, b = 1)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(2,2))
+plot(mod_3)
+```
+
+
+## mod_5 waist+Weight+Height
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(1,3))
+plot(rstudent(mod_5)~body_fat$waist, xlab="waist", ylab="standard. residuals")
+plot(rstudent(mod_5)~body_fat$Height, xlab="Height", ylab="standard. residuals")
+plot(rstudent(mod_5)~body_fat$Weight, xlab="Weight", ylab="standard. residuals")
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(body_fat$Pct.BF ~ fitted(mod_5), xlab="Fitted Values", ylab="Price")
+abline(a = 0, b = 1)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+par(mfrow=c(2,2))
+plot(mod_5)
+```
+
+
+## Conclusion
+waist + Weight
+
