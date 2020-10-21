@@ -1,0 +1,137 @@
+---
+title: "Problem Set 1 - Establishing Foundations"
+author: "Yiyun Sun"
+date: "10/1/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+# Part a
+```{r}
+# install.packages("opendatatoronto", repos = "http://cran.us.r-project.org") 
+# devtools::install_github("sharlagelfand/opendatatoronto")
+# install.packages("ggpubr")
+```
+
+```{r}
+library(opendatatoronto)
+
+
+library(tidyverse)
+library(visdat)
+library(skimr)
+library(dplyr)
+library(ggpubr)
+
+```
+
+```{r}
+NCR <- read.csv("/Users/sunyiyun/Downloads/Neighbourhood Crime Rates.csv", header=T)
+glimpse(NCR)
+```
+
+The data is about the Neighborhood Crime Rates, which includes the 2014-2019 Crime Data by Neighborhood. The whole data contains 62 variables and 140 observations totally. Among them, 60 variables are numerical variables and other 2 are categorical variables. The number of the occurrence of Assault, Auto Theft, Break and Enter, Robbery, Theft Over and Homicide each year from 2014 to 2019 are provided respectively. This data also includes six year averages, rate changes in each kind of crime from 2018 to 2019 and crime rates per 100,000 people by neighborhood based on 2016 Census Population. \
+I chose this data because crime rate has always been a very hot topic. And this data covers the number of occurrences of different types of crimes in the past six years, so I think this database has a high reference value.\
+In this data, I think "Assault_AVG, Assault_CHG, AutoTheft_AVG, AutoTheft_CHG, Homicide_AVG, Homicide_CHG, Robbery_AVG, Robbery_CHG, TheftOver_AVG, TheftOver_CHG" these 10 variables are good and will be helpful for the subsequent analysis, because these variables link the data of previous years and can facilitate our comparison. But I think this data lacks a variable representing the year. The statistical information in the entire data is divided by region, which is not conducive to looking at the overall crime rate changes in Toronto in recent years.
+
+
+
+# Part b
+
+When I browsed the data set, I found Assault_CHG, Homicide_CHG, AutoTheft_CHG, Robbery_CHG, TheftOver_CHG variables described percent Change from 2018-2019 in different aspects. So I guess the histogram plots of these variables could demonstrate the center and spread in the rate of each crime in Toronto from 2018 to 2019.
+Here is the plot. 
+```{r}
+ass <- NCR %>%
+  ggplot(aes(x = Assault_CHG)) + geom_histogram(bins = 30)
+homi <- NCR %>%
+  ggplot(aes(x = Homicide_CHG)) + geom_histogram(bins = 30)
+
+auto <- NCR %>%
+  ggplot(aes(x = AutoTheft_CHG )) + geom_histogram(bins = 30)
+rob<- NCR %>%
+  ggplot(aes(x = Robbery_CHG )) + geom_histogram(bins = 30)
+theft<- NCR %>%
+  ggplot(aes(x = TheftOver_CHG)) + geom_histogram(bins = 30)
+figure <- ggarrange(ass, homi, auto, rob, theft,
+                    labels = c("A", "B", "C", "D", "E"),
+                    ncol = 2, nrow = 3)
+figure
+```
+
+These five plots demonstrate the distribution of each variable. It is easy to find that the center of them are all zero, which means the occurrences rate of assault, homicide, auto-theft, robbery, and theftover almost hasn't changed in most regions.\
+Picture B, C, D and E all demonstrate a left-skewed distribution obviously. And after comparison, I found that only the outliers in picture A were less than 2.0. This phenomenon shows that although the crime rate in most places has not changed, there are still many areas where the homicide, auto-theft, robbery, and theftover rates have been at least doubled in a year which is terrifying. Another finding is not good neither. In five plots, the left outliers are almost not reached -1 which represents that the five kinds of crime rate in some places has not decreased too much. \
+
+
+
+# Part c
+
+```{r}
+n = 140
+NCR_1 <- NCR %>%
+  select(Assault_CHG,Homicide_CHG, AutoTheft_CHG, Robbery_CHG, TheftOver_CHG ) %>%
+  mutate(Assault_eva = ifelse(Assault_CHG <= 0, 'good', 'bad')) %>%
+  mutate(Homicide_eva = ifelse(Homicide_CHG <= 0, 'good', 'bad')) %>%
+   mutate(AutoTheft_eva = ifelse(AutoTheft_CHG <= 0, 'good', 'bad')) %>%
+  mutate(Robbery_eva = ifelse(Robbery_CHG <= 0, 'good', 'bad')) %>%
+  mutate(TheftOver_eva = ifelse(TheftOver_CHG <= 0, 'good', 'bad'))
+  
+
+
+
+NCR_1 %>% 
+  group_by(Assault_eva) %>%
+  summarise(n()/n, .groups = 'drop')
+
+NCR_1 %>% 
+  group_by(Homicide_eva) %>%
+  summarise(n()/n, .groups = 'drop')
+
+NCR_1 %>% 
+  group_by(AutoTheft_eva) %>%
+  summarise(n()/n, .groups = 'drop')
+
+NCR_1 %>% 
+  group_by(Robbery_eva) %>%
+  summarise(n()/n, .groups = 'drop')
+
+NCR_1 %>% 
+  group_by(TheftOver_eva) %>%
+  summarise(n()/n, .groups = 'drop')
+
+```
+
+I still focus on Assault_CHG, Homicide_CHG, AutoTheft_CHG, Robbery_CHG, TheftOver_CHG variables in this part. I divide each variables into two groups according to whether the percentages are greater than 0. Then I construct five tables to represent how Toronto's crime rate has changed in 2018-2019. The "bad" row in these tables represents the percentage of the neighborhood where the crime rate has increased, and the "good" represents the reduction.\
+From table 2, it can be found that the percent of "bad" is only 23.6% and percent of "good" is 76%, which means the homicide rate has decreased in 76% of the area. And it is obvious to find that the robbery rate has decreased in 57.9% of the neighborhood from table 4. However, other three tables shows that in 64.3% of the neighborhoods, the rate of assault increased; in 55% of the area, the rate of auto-theft increased and the rate of thefts-over increased in 51.4% of the area from 2018 to 2019.
+
+
+
+# Part d
+
+Crime has always been an important city problem. Thus, I want to investigate how crime rate changed recent years in Toronto, and then I found this data. The data I used is "Neighborhood Crime Rates" dataset, which represents the occurrence number of different kinds of crime in different neighborhoods over past years. The purpose of the whole analysis is to find how the rate of assault, homicide, auto-theft, robbery, and theftover changed from 2018 to 2019. In my hypothesis, all the rates should be decreased because of the development of the city, but the research result surprised me. \
+I constructed the histogram plot of each variable firstly to demonstrate the distribution. Then I found that in most neighborhoods, the rate of these five crimes didn't change anymore which is good. But there exists outliers in every plot shows that crime rate in some regions increased a lot. Next, I construed five new variables to divide the percentage into two groups and store them. After summarizing, it is obvious to find homicide and robbery rate decreased in more than half of the neighborhoods. But rate of assault, autotheft, and theft-over increased in most areas. \
+Overall, the crime rate problem in Toronto still has a long way to go. The goal of the government should be that the rate decreases every year, which is not easy to accomplish and the government needs to pay more attention to the area with high-crime-rate. 
+
+
+
+
+# Part e
+
+Bibliography:
+
+1. Contributors, D. C. (2017). Aggregating and analyzing data with dplyr. Data Carpentry. https://datacarpentry.org/R-genomics/04-dplyr.html
+
+2. (2017, November 17). Combine Multiple GGPlots in One Graph. Articles - STHDA. http://www.sthda.com/english/articles/32-r-graphics-essentials/126-combine-multiple-ggplots-in-one-graph/
+
+3. (2020). Open Data Dataset. City of Toronto Open Data Portal. https://open.toronto.ca/dataset/neighbourhood-crime-rates/
+
+4. Kassambara, A. (2020). ggpubr: 'ggplot2' Based Publication Ready Plots. R package version 0.4.0.
+  https://CRAN.R-project.org/package=ggpubr
+
+5. Gelfand, S. (2020). opendatatoronto: Access the City of Toronto Open Data Portal.
+  https://sharlagelfand.github.io/opendatatoronto/, https://github.com/sharlagelfand/opendatatoronto/.
